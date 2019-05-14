@@ -1,0 +1,82 @@
+#!/bin/bash
+
+set -e
+
+export LC_ALL=C
+
+echo -n "Initializing... "
+mkdir -p .poda
+
+if [ ! -f .poda/index ]; then
+  touch .poda/index
+fi 
+
+rm -f .poda/duplicate-files
+echo done.
+
+echo -n "Recreating old preindex... "
+# cat .poda/index | while read M S D T Z F; do echo "================================ $S $D $T $Z $F"; done | sort -s > .poda/old-preindex
+# replace md5sum hash with equal signs (in the above pseudocode replace M with signs
+# comm --output-delimiter '================================ ' -3 <(true) <(cut -b 34- .poda/index | sort -s) | sort -s > .poda/old-preindex
+cat .poda/index | cut -b 34- | sed -re 's/^/================================ /g' | sort -s > .poda/old-preindex
+echo done.
+
+echo -n "Creating new preindex... "
+find "$@" -type f -not -path '*./.poda/*' -not -path '*/\.*' -print0 | xargs -0 stat --printf "================================ %018s %y %n\n" -- > .poda/new-preindex-unsorted
+echo -n "sorting... "
+sort < .poda/new-preindex-unsorted > .poda/new-preindex
+echo done.
+
+echo -n "Finding which files have not changed... "
+# comm --output-delimiter='================================ ' -1 -2 .poda/old-preindex .poda/new-preindex > .poda/new-preindex-keep
+comm -1 -2 .poda/old-preindex .poda/new-preindex | sed -re 's/^	/================================ /g' > .poda/new-preindex-keep
+echo done.
+
+echo -n "Finding which files have changed... "
+# comm --output-delimiter='================================ ' -1 -3 .poda/old-preindex .poda/new-preindex > .poda/new-preindex-calculate
+comm -1 -3 .poda/old-preindex .poda/new-preindex | sed -re 's/^       /================================ /g' > .poda/new-preindex-calculate
+echo done.
+
+echo -n "Reusing old hashes for files that have not changed... "
+cat .poda/index .poda/new-preindex-keep | sort -k 2,7 -s | uniq -s 32 -D | (grep -v '^=' || true) > .poda/new-index-kept
+echo done.
+
+echo -n "Recalculating hashes for files that have changed... "
+BS=131072
+cat .poda/new-preindex-calculate | while read M SIZE DATE TIME ZONE FILE; do
+  if [ -r "$FILE" ]; then # find used -readable, but things may have changed
+    [ "$((10#$SIZE))" -eq "0" ] && continue
+    if [ "$((10#$SIZE))" -lt "$((BS * 256))" ]; then
+      SUM=$(md5sum "$FILE" | cut -b -32)
+    else
+      #echo SIZE: $SIZE $((10#$SIZE)) > /dev/stderr
+      BLOCKS=$(((10#$SIZE-BS)/BS))
+      #echo BLOCKS: $BLOCKS > /dev/stderr
+      RC=$(root=0; while [ "$((root * $root))" -le "$BLOCKS" ]; do root=$((root+1)); done; echo $((root-1)))
+      #echo RC: $RC > /dev/stderr
+      mEVERY=$((1000*BLOCKS/RC))
+      #echo mEVERY: $mEVERY > /dev/stderr
+      SUM=$((for M in $(seq 0 $((RC-1))); do dd bs=$BS skip=$((M*mEVERY/1000)) count=1 if="$FILE"; done; dd bs=$BS skip=$BLOCKS if="$FILE") 2> /dev/null | md5sum | cut -b -32)
+    fi
+    if [ "$SUM" != "" ]; then # only print if md5sum did not fail
+      echo "$SUM" "$SIZE" "$DATE" "$TIME" "$ZONE" "$FILE"
+    fi
+  fi
+done > .poda/new-index-calculated
+echo done.
+
+echo -n "Concatenating reused and new data into new index... "
+cat .poda/new-index-kept .poda/new-index-calculated | sort -s > .poda/new-index
+echo done.
+
+echo -n "Creating duplicates report... "
+sort -k 2,2r .poda/index | uniq -w 51 --all-repeated=separate > .poda/duplicate-files
+echo done.
+
+echo -n "Replacing old index with new one and cleaning up... "
+mv .poda/new-index .poda/index
+#rm .poda/new-*
+#rm .poda/old-*
+echo done.
+echo
+echo Reindex completed successfully.

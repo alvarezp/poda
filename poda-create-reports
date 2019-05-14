@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cat .poda/*.index | poda-dirdupes.py | sort -nr > .poda/poda-similar-directories
