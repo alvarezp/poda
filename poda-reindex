@@ -70,7 +70,7 @@ cat .poda/new-index-kept .poda/new-index-calculated | sort -s > .poda/new-index
 echo done.
 
 echo -n "Creating duplicates report... "
-sort -k 2,2r .poda/index | uniq -w 51 --all-repeated=separate > .poda/duplicate-files
+sort -k 2,2r .poda/new-index | uniq -w 51 --all-repeated=separate > .poda/duplicate-files
 echo done.
 
 echo -n "Replacing old index with new one and cleaning up... "
