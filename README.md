@@ -32,4 +32,7 @@ Example usage:
 
 5. Run poda-create-reports. Find it under .poda.
 
+A sample run can be found in the doc/sample-run.txt. Quick links:
+* Gitlab: <https://gitlab.com/alvarezp2000/poda/blob/master/doc/sample-run.txt>
+
 I hope you find this program useful. I am open to suggestions.
