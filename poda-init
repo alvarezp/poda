@@ -1,0 +1,33 @@
+#!/bin/bash
+
+set -e
+
+export LC_ALL=C
+
+if [ -z "${PODADIR}" ]; then
+    PODADIR=$HOME/.poda
+fi
+
+if [ -d "${PODADIR}" ]; then
+    echo "${PODADIR} already exists. Exiting."
+    exit 1
+fi
+
+#  [ ! -z ] ---> [ -n ]
+if [ -n "$1" ]; then
+    HOSTNAME="$1"
+else
+    HOSTNAME=$(hostname -s)
+fi
+
+[ -z "${HOSTNAME}" ] && {
+    echo "Fatal: could not read from hostname -s and no hostname provided."
+    exit 1
+}
+
+echo -n "Initializing directory: $PODADIR... "
+mkdir -p "${PODADIR}"
+
+echo "${HOSTNAME}" > "${PODADIR}/hostname"
+
+echo "done."

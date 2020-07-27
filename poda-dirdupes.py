@@ -23,7 +23,7 @@ equalpathtotals = dict()
 
 with open(0, 'r', errors='replace') as f:
 
-    prevline = "================================ 000000000000 xxxx-xx-xx xx:xx:xx +xxxx ./whatever\n"
+    prevline = "================================ 000000000000 xxxx-xx-xx xx:xx:xx +xxxx xxx xxx ./whatever\n"
     n = 0
     while True:
 
@@ -39,7 +39,7 @@ with open(0, 'r', errors='replace') as f:
                 print("BAD LINE: " + line)
                 raise
                 
-            path = os.path.dirname(" ".join(line.split(" ")[5:]))
+            path = ":".join([line.split(" ")[5], line.split(" ")[6], os.path.dirname(" ".join(line.split(" ")[7:]))])
             
             while True:
                 if path in dirsizes:
@@ -52,7 +52,7 @@ with open(0, 'r', errors='replace') as f:
                     break
 
         prevsize = int(prevline.split(" ")[1])
-        prevpath = os.path.dirname(" ".join(prevline.split(" ")[5:]))
+        prevpath = ":".join([prevline.split(" ")[5], prevline.split(" ")[6], os.path.dirname(" ".join(prevline.split(" ")[7:]))])
 
         # add the path from prevline to an "equal pool"
         if prevpath not in equalpathpool:

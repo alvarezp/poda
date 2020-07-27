@@ -1,0 +1,75 @@
+#!/bin/bash
+
+set -e
+
+export LC_ALL=C
+
+[ -z "${PODADIR}" ] && PODADIR=$HOME/.poda
+
+[ ! -f "${PODADIR}/hostname" ] && {
+    echo "Cannot find ${PODADIR}/hostname - Run poda-init first."
+    exit 1
+}
+
+[ "$#" -ne 2 ] && {
+    echo "Shows the differences between two directories".
+    echo
+    echo "usage: poda-diff dir1 dir2"
+    echo
+    echo "Two directories required. For each directory use the form:"
+    echo "hostname:hamper:directory. Don't forget to put it in quotes if"
+    echo "the directory has spaces or special characters in it."
+    exit 1
+}
+
+ONE="$1"
+while read -r HASH SIZE _D_ _T_ _Z_ HOST HAMPER FILE; do
+    IFS=: read -r BASEDIR RELPATH <<<"${FILE}"
+    if [ -z "${PREVHASH}" ]; then
+        PREVHASH="${HASH}"
+        PREVSIZE="${SIZE}"
+        PREVRELPATH="${RELPATH}"
+        PREVHOST="${HOST}"
+        PREVHAMP="${HAMPER}"
+        PREVDIR="${BASEDIR}"
+        continue
+    fi
+
+    if [ "${RELPATH}" = "${PREVRELPATH}" ]; then
+        if [ "${SIZE}" = "${PREVSIZE}" ] && [ "${HASH}" = "${PREVHASH}" ]; then
+            echo "   ${HASH} ${SIZE} ${RELPATH}"
+        else
+            echo "-+ ${HASH} ${SIZE} ${RELPATH}"
+        fi
+        HASH=
+    else
+        if [ "${ONE}" = "${PREVHOST}:${PREVHAMP}:${PREVDIR}" ]; then
+            echo "-- ${PREVHASH} ${PREVSIZE} ${PREVRELPATH}"
+        else
+            echo "++ ${PREVHASH} ${PREVSIZE} ${PREVRELPATH}"
+        fi
+    fi
+
+    PREVHASH="${HASH}"
+    PREVSIZE="${SIZE}"
+    PREVRELPATH="${RELPATH}"
+    PREVHOST="${HOST}"
+    PREVHAMP="${HAMPER}"
+    PREVDIR="${BASEDIR}"
+done < <(
+    while [ $# -gt 0 ]; do
+        IFS=: read -r HOSTNAME HAMPER DIR <<<"$1"
+        grep -E " ${DIR}" < "${PODADIR}/indexes/${HOSTNAME}/${HAMPER}/index" | \
+            sed -re "s, ${HOSTNAME} ${HAMPER} ${DIR}/, ${HOSTNAME} ${HAMPER} ${DIR}:,"
+        shift
+    done | sort -t: -k 4
+)
+
+if [ -n "${PREVHASH}" ]; then
+    if [ "${ONE}" = "${PREVHOST}:${PREVHAMP}:${PREVDIR}" ]; then
+        echo "-- ${PREVHASH} ${PREVSIZE} ${PREVRELPATH}"
+    else
+        echo "++ ${PREVHASH} ${PREVSIZE} ${PREVRELPATH}"
+    fi
+fi
+

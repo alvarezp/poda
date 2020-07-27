@@ -1,3 +1,5 @@
+$ cd
+
 $ mkdir content
 
 $ echo 'Hello world!' > content/hello-world.txt
@@ -6,7 +8,7 @@ $ echo 'The quick brown fox jumps over the lazy dog' > content/lazy-dog.txt
 
 $ cp -a content backup
 
-$ ls *
+$ ls content backup
 backup:
 hello-world.txt  lazy-dog.txt
 
@@ -15,8 +17,23 @@ hello-world.txt  lazy-dog.txt
 
 $ echo 'Lorem ipsum dolor sit amet' > content/lorem-ipsum.txt
 
+$ ls content backup
+backup:
+hello-world.txt  lazy-dog.txt
+
+content:
+hello-world.txt  lazy-dog.txt  lorem-ipsum.txt
+
+$ poda-init
+Initializing directory: /home/alvarezp/.poda... done.
+
+$ poda-hampers-add samplehamper $HOME content backup
+
 $ poda-reindex
-Initializing... done.
+Hamper required. The following hampers are available:
+ - samplehamper
+
+$ poda-reindex samplehamper
 Recreating old preindex... done.
 Creating new preindex... sorting... done.
 Finding which files have not changed... done.
@@ -29,26 +46,58 @@ Replacing old index with new one and cleaning up... done.
 
 Reindex completed successfully.
 
-$ ls .poda
-duplicate-files  new-index-calculated  new-preindex            new-preindex-keep      old-preindex
-index            new-index-kept        new-preindex-calculate  new-preindex-unsorted
+$ find .poda
+.poda
+.poda/indexes
+.poda/indexes/alvarezp-samsung
+.poda/indexes/alvarezp-samsung/samplehamper
+.poda/indexes/alvarezp-samsung/samplehamper/duplicate-files
+.poda/indexes/alvarezp-samsung/samplehamper/index
+.poda/hostname
+.poda/hampers
 
-$ cat .poda/index
-02d02593c2d506163c8e5e87b77e277c 000000000000000027 2019-05-14 22:22:43.322540352 -0500 ./content/lorem-ipsum.txt
-37c4b87edffc5d198ff5a185cee7ee09 000000000000000044 2019-05-14 22:22:19.446735003 -0500 ./backup/lazy-dog.txt
-37c4b87edffc5d198ff5a185cee7ee09 000000000000000044 2019-05-14 22:22:19.446735003 -0500 ./content/lazy-dog.txt
-59ca0efa9f5633cb0371bbc0355478d8 000000000000000013 2019-05-14 22:22:17.550750687 -0500 ./backup/hello-world.txt
-59ca0efa9f5633cb0371bbc0355478d8 000000000000000013 2019-05-14 22:22:17.550750687 -0500 ./content/hello-world.txt
+$ cat .poda/hampers
+alvarezp-samsung samplehamper     /home/alvarezp                       content backup
 
-$ cat .poda/duplicate-files 
-37c4b87edffc5d198ff5a185cee7ee09 000000000000000044 2019-05-14 22:22:19.446735003 -0500 ./backup/lazy-dog.txt
-37c4b87edffc5d198ff5a185cee7ee09 000000000000000044 2019-05-14 22:22:19.446735003 -0500 ./content/lazy-dog.txt
+$ cat .poda/indexes/alvarezp-samsung/samplehamper/index
+02d02593c2d506163c8e5e87b77e277c 000000000000000027 2020-07-22 00:19:58.389937427 -0500 alvarezp-samsung samplehamper content/lorem-ipsum.txt
+37c4b87edffc5d198ff5a185cee7ee09 000000000000000044 2020-07-22 00:19:51.754087579 -0500 alvarezp-samsung samplehamper backup/lazy-dog.txt
+37c4b87edffc5d198ff5a185cee7ee09 000000000000000044 2020-07-22 00:19:51.754087579 -0500 alvarezp-samsung samplehamper content/lazy-dog.txt
+59ca0efa9f5633cb0371bbc0355478d8 000000000000000013 2020-07-22 00:19:48.678157572 -0500 alvarezp-samsung samplehamper backup/hello-world.txt
+59ca0efa9f5633cb0371bbc0355478d8 000000000000000013 2020-07-22 00:19:48.678157572 -0500 alvarezp-samsung samplehamper content/hello-world.txt
 
-59ca0efa9f5633cb0371bbc0355478d8 000000000000000013 2019-05-14 22:22:17.550750687 -0500 ./backup/hello-world.txt
-59ca0efa9f5633cb0371bbc0355478d8 000000000000000013 2019-05-14 22:22:17.550750687 -0500 ./content/hello-world.txt
+$ cat .poda/indexes/alvarezp-samsung/samplehamper/duplicate-files 
+37c4b87edffc5d198ff5a185cee7ee09 000000000000000044 2020-07-22 00:19:51.754087579 -0500 alvarezp-samsung samplehamper backup/lazy-dog.txt
+37c4b87edffc5d198ff5a185cee7ee09 000000000000000044 2020-07-22 00:19:51.754087579 -0500 alvarezp-samsung samplehamper content/lazy-dog.txt
 
-$ poda-import laptop .poda/index > .poda/laptop.index
+59ca0efa9f5633cb0371bbc0355478d8 000000000000000013 2020-07-22 00:19:48.678157572 -0500 alvarezp-samsung samplehamper backup/hello-world.txt
+59ca0efa9f5633cb0371bbc0355478d8 000000000000000013 2020-07-22 00:19:48.678157572 -0500 alvarezp-samsung samplehamper content/hello-world.txt
 
-$ cat .poda/laptop.index | poda-dirdupes.py | sort -rn
-                23   80.85%                 57: [laptop]./backup [laptop]./content
+$ cat .poda/indexes/*/*/index | poda-dirdupes.py | sort -n > similardirs.txt
+
+$ cat similardirs.txt 
+                23   80.85%                 57: alvarezp-samsung:samplehamper:backup alvarezp-samsung:samplehamper:content
+
+$ poda-ls alvarezp-samsung:samplehamper:backup
+37c4b87edffc5d198ff5a185cee7ee09 000000000000000044 2020-07-22 00:19:51.754087579 -0500 alvarezp-samsung samplehamper backup/lazy-dog.txt
+59ca0efa9f5633cb0371bbc0355478d8 000000000000000013 2020-07-22 00:19:48.678157572 -0500 alvarezp-samsung samplehamper backup/hello-world.txt
+
+$ poda-ls alvarezp-samsung:samplehamper:content
+02d02593c2d506163c8e5e87b77e277c 000000000000000027 2020-07-22 00:19:58.389937427 -0500 alvarezp-samsung samplehamper content/lorem-ipsum.txt
+37c4b87edffc5d198ff5a185cee7ee09 000000000000000044 2020-07-22 00:19:51.754087579 -0500 alvarezp-samsung samplehamper content/lazy-dog.txt
+59ca0efa9f5633cb0371bbc0355478d8 000000000000000013 2020-07-22 00:19:48.678157572 -0500 alvarezp-samsung samplehamper content/hello-world.txt
+
+$ poda-lsuniq alvarezp-samsung:samplehamper:backup alvarezp-samsung:samplehamper:content
+02d02593c2d506163c8e5e87b77e277c 000000000000000027 2020-07-22 00:19:58.389937427 -0500 alvarezp-samsung samplehamper content/lorem-ipsum.txt
+
+$ poda-diff alvarezp-samsung:samplehamper:backup alvarezp-samsung:samplehamper:content
+   59ca0efa9f5633cb0371bbc0355478d8 000000000000000013 hello-world.txt
+   37c4b87edffc5d198ff5a185cee7ee09 000000000000000044 lazy-dog.txt
+++ 02d02593c2d506163c8e5e87b77e277c 000000000000000027 lorem-ipsum.txt
+
+$ poda-diff alvarezp-samsung:samplehamper:content alvarezp-samsung:samplehamper:backup
+   59ca0efa9f5633cb0371bbc0355478d8 000000000000000013 hello-world.txt
+   37c4b87edffc5d198ff5a185cee7ee09 000000000000000044 lazy-dog.txt
+-- 02d02593c2d506163c8e5e87b77e277c 000000000000000027 lorem-ipsum.txt
+
 

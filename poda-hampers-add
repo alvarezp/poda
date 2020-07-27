@@ -1,0 +1,93 @@
+#!/bin/sh
+
+set -e
+
+# I would have used realpath but I there are systems that are *really* old
+# and don't have realpath yet, so I copied this from Stack Overflow answer,
+# so credit to the answer author: Eugen Konkov. Very nice trick.
+# - https://stackoverflow.com/a/31605674
+#
+# Adapted to apply only to directories. Otherwise the realpath for "."
+# would be /some/dir/.
+realdir() {
+    echo "$(cd "$1"; pwd)"
+}
+
+print_help() {
+    echo "usage: poda-hampers-add [options] <hampername> <basedir> <find_expr>"
+    echo
+    echo "Options:"
+    echo "  -H  --hostname    Sets the hostname for this hamper"
+    echo "  -n  --nohost      Sets the hostname for this hamper to __NOHOST"
+    echo "  -h  --help        Prints this help message"
+    echo
+    echo "Note: Do not forget <find_expr>. If you wish to just use all"
+    echo "      within <basedir>, use a single dot, like this:"
+    echo "      poda-hampers-add [options] hampername /base/dir ."
+    echo
+    echo "Note: Hamper names must be unique across each hostname. This implies"
+    echo "      that for hampers without host (-n), hampernames must be unique"
+    echo "      across all your systems (at least across each poda domain."
+    echo
+}
+
+[ -z "${PODADIR}" ] && PODADIR=$HOME/.poda
+
+[ ! -f "${PODADIR}/hostname" ] && {
+    echo "Invalid Poda directory: ${PODADIR} - Maybe run poda init?"
+    exit 1
+}
+
+HOSTNAME="$(cat "${PODADIR}"/hostname)"
+
+# poda-hampers add -m OCTAL_VFAT /mnt/octal_vfat .
+# poda-hampers add -m LAPTOP_HOME /home/alvarezp . -path ./Dropbox -prune -o -path ./temp -prune -o
+
+# [ ! -z ] ---> [ -n ]
+while [ -n "$1" ]; do
+    case "$1" in
+    --hostname|-H)
+        HOSTNAME="$2"
+        shift
+        ;;
+    --nohost|-n)
+        HOSTNAME="__NOHOST"
+        ;;
+    --help|-h)
+        print_help
+        exit 0
+        ;;
+    *)
+        # From first unknown parameter and on, consider it "the rest" of
+        # the argument list, this is: <hampername> <basedir> [find_expr]
+        break;
+    esac
+    shift
+done
+
+if [ ! "$#" -ge 3 ]; then
+    print_help >&2
+    exit 1;
+fi
+
+HAMPERNAME="$1"
+shift
+
+BASEDIR="$1"
+shift
+BASEDIR="$(realdir "${BASEDIR}")"
+
+FINDEXPR="$*"
+
+touch "${PODADIR}/hampers"
+while read -r HO HA ELSE; do
+    if [ "$HO" = "${HOSTNAME}" ] && [ "$HA" = "${HAMPERNAME}" ]; then
+        echo "Hamper '$HAMPERNAME' already exists. Please remove it first."
+        echo "For now, it has to be done manually in ${PODADIR}/hampers"
+        exit 1;
+    fi
+done < "${PODADIR}/hampers"
+
+printf "%-16s %-16s %-36s %s\n" \
+    "${HOSTNAME}" "${HAMPERNAME}" "${BASEDIR}" "${FINDEXPR}" \
+    >> "${PODADIR}/hampers"

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -e
+
+export LC_ALL=C
+
+[ -z "${PODADIR}" ] && PODADIR=$HOME/.poda
+
+[ ! -f "${PODADIR}/hostname" ] && {
+    echo "Cannot find ${PODADIR}/hostname - Run poda-init first."
+    exit 1
+}
+
+[ "$#" -eq 0 ] && {
+    echo "usage: poda-ls dir ..."
+    echo
+    echo "Multiple directories are accepted. For each directory use the form:"
+    echo "hostname:hamper:directory. Don't forget to put it in quotes if"
+    echo "the directory has spaces or special characters in it."
+    exit 1
+}
+
+while [ $# -gt 0 ]; do
+    IFS=: read -r HOSTNAME HAMPER DIR <<<"$1"
+    grep -E " ${DIR}" < "${PODADIR}/indexes/${HOSTNAME}/${HAMPER}/index"
+    shift
+done
+
