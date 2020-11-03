@@ -73,7 +73,7 @@ $ cat .poda/indexes/alvarezp-samsung/samplehamper/duplicate-files
 59ca0efa9f5633cb0371bbc0355478d8 000000000000000013 2020-07-22 00:19:48.678157572 -0500 alvarezp-samsung samplehamper backup/hello-world.txt
 59ca0efa9f5633cb0371bbc0355478d8 000000000000000013 2020-07-22 00:19:48.678157572 -0500 alvarezp-samsung samplehamper content/hello-world.txt
 
-$ cat .poda/indexes/*/*/index | poda-dirdupes.py | sort -n > similardirs.txt
+$ cat .poda/indexes/*/*/index | sort | poda-dirdupes.py | sort -n > similardirs.txt
 
 $ cat similardirs.txt 
                 23   80.85%                 57: alvarezp-samsung:samplehamper:backup alvarezp-samsung:samplehamper:content

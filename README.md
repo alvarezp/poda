@@ -52,7 +52,7 @@ Example usage:
    
 6. Generate the similar directories report:
 
-   ``cat ~/.poda/indexes/\*/\*/index | poda-dirdupes.py | sort -n > dirdupes.txt``
+   ``cat ~/.poda/indexes/\*/\*/index | sort | poda-dirdupes.py | sort -n > dirdupes.txt``
 
 A sample run can be found in the doc/sample-run.txt. Quick links:
 * Gitlab: <https://gitlab.com/alvarezp2000/poda/blob/master/doc/sample-run.txt>
