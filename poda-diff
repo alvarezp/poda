@@ -59,7 +59,7 @@ while read -r HASH SIZE _D_ _T_ _Z_ HOST HAMPER FILE; do
 done < <(
     while [ $# -gt 0 ]; do
         IFS=: read -r HOSTNAME HAMPER DIR <<<"$1"
-        grep -E " ${DIR}" < "${PODADIR}/indexes/${HOSTNAME}/${HAMPER}/index" | \
+        grep -E " ${DIR}/" < "${PODADIR}/indexes/${HOSTNAME}/${HAMPER}/index" | \
             sed -re "s, ${HOSTNAME} ${HAMPER} ${DIR}/, ${HOSTNAME} ${HAMPER} ${DIR}:,"
         shift
     done | sort -t: -k 4
