@@ -67,13 +67,15 @@ paths = dict()
 
 filesize = 0
 
-prevline = "================================ 000000000000 xxxx-xx-xx xx:xx:xx +xxxx xxx xxx ./whatever\n"
+prevline = "================================ 000000000000000000 xxxx-xx-xx xx:xx:xx +xxxx xxx xxx ./whatever\n"
 n = 0
 
 with open(0, 'r', errors='replace') as f:
     for line in f:
         # - The equal pool will be processed once a
         #   **differing-content** line is found.
+        
+        # 51 is the length of the hash plus the size on the line.
         if line[0:51] != prevline[0:51]:
             processclass(direquals, dirsizes, paths, filesize)
             paths.clear()
