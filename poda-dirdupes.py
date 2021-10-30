@@ -24,9 +24,10 @@ def processclass(direquals, dirsizes, pathamounts, filesize):
     pathlist = list()
     for path in pathamounts:
         splitpath = path.split('/')
-        pathlist.extend(map("/".join, [splitpath[:i+1] for i in range(len(splitpath))]))
+        allparents = [splitpath[:i+1] for i in range(len(splitpath))]
+        pathlist.extend(map("/".join, allparents))
         amount = pathamounts[path]
-        for p in map("/".join, [splitpath[:i+1] for i in range(len(splitpath))]):
+        for p in map("/".join, allparents):
             try:
                 dirsizes[p] += amount * filesize
                 #dprint("!!! dirsizes['%s'] += %d * %d" % (path, amount, filesize))
