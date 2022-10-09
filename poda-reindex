@@ -86,6 +86,10 @@ echo -n "Recalculating hashes for files that have changed... "
 BS=131072
 while read -r M SIZE DATE TIME ZONE _HOST_ HAMPER FILE; do
   if [ -r "${BASEDIR}/${FILE}" ]; then # find used -readable, but things may have changed
+    if [ "${M}" != "================================" -o "${SIZE}" == "" ]; then
+      echo "Bad entry in new-preindex-calculate: ${M} ${SIZE} ${DATE} ${TIME} ${ZONE} ${_HOST_} ${HAMPER} ${FILE}" >&2
+      continue
+    fi
     [ "$((10#$SIZE))" -eq "0" ] && continue
     if [ "$((10#$SIZE))" -lt "$((BS * 256))" ]; then
       SUM=$(md5sum "${BASEDIR}/${FILE}" | cut -b -32)
