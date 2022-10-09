@@ -59,8 +59,10 @@ echo done.
 
 echo -n "Creating new preindex... "
 pushd "${BASEDIR}" > /dev/null || { echo "Could not switch to ${BASEDIR}. Exiting."; exit 1; }
+# For the following line, we are excluding files containing \n in the name. Syntax is a bit weird.
 # shellcheck disable=SC2086
-find ${FINDEXPR} -name '.poda' -type d -prune -o -type f -size +0 -print0 | xargs -0 stat --printf "================================ %018s %y ${HOSTNAME} ${HAMPER} %n\n" -- > "${INDEXDIR}/new-preindex-unsorted"
+find ${FINDEXPR} -name '.poda' -type d -prune -o \! -name '*
+*' -a -type f -size +0 -print0 | xargs -0 stat --printf "================================ %018s %y ${HOSTNAME} ${HAMPER} %n\n" -- > "${INDEXDIR}/new-preindex-unsorted"
 popd > /dev/null
 echo -n "sorting... "
 sort < "${INDEXDIR}/new-preindex-unsorted" > "${INDEXDIR}/new-preindex"
