@@ -112,5 +112,4 @@ for p in direquals:
     ##print("! dirsizes[p[1]] = %s" % (dirsizes[p[1]]))
     ##print("! direquals[p[1]] = %s" % (direquals[p]))
     s=similarity(dirsizes[p[0]], dirsizes[p[1]], direquals[p])
-    if s >= 0.5:
-        print("%18.0f  %6.2f%% %18s: %s %s" % (0.5 * s * direquals[p], 100 * s, direquals[p], p[0], p[1]))
+    print("%18.0f  %6.2f%% %18s: %s %s" % (0.5 * s * direquals[p], 100 * s, direquals[p], p[0], p[1]))
