@@ -119,8 +119,8 @@ echo done.
 
 echo -n "Replacing old index with new one and cleaning up... "
 mv "${INDEXDIR}/new-index" "${INDEXDIR}/index"
-rm "${INDEXDIR}"/new-*
-rm "${INDEXDIR}"/old-*
+[ "${PODAKEEP}" != "y" ] && rm "${INDEXDIR}"/new-*
+[ "${PODAKEEP}" != "y" ] && rm "${INDEXDIR}"/old-*
 echo done.
 echo
 echo Reindex completed successfully.
