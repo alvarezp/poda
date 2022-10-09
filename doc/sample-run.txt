@@ -27,7 +27,7 @@ hello-world.txt  lazy-dog.txt  lorem-ipsum.txt
 $ poda-init
 Initializing directory: /home/alvarezp/.poda... done.
 
-$ poda-hampers-add samplehamper $HOME content backup
+$ poda-hamper-add samplehamper $HOME content backup
 
 $ poda-reindex
 Hamper required. The following hampers are available:

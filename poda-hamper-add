@@ -14,7 +14,7 @@ realdir() {
 }
 
 print_help() {
-    echo "usage: poda-hampers-add [options] <hampername> <basedir> <find_expr>"
+    echo "usage: poda-hamper-add [options] <hampername> <basedir> <find_expr>"
     echo
     echo "Options:"
     echo "  -H  --hostname    Sets the hostname for this hamper"
@@ -23,7 +23,7 @@ print_help() {
     echo
     echo "Note: Do not forget <find_expr>. If you wish to just use all"
     echo "      within <basedir>, use a single dot, like this:"
-    echo "      poda-hampers-add [options] hampername /base/dir ."
+    echo "      poda-hamper-add [options] hampername /base/dir ."
     echo
     echo "Note: Hamper names must be unique across each hostname. This implies"
     echo "      that for hampers without host (-n), hampernames must be unique"
@@ -40,8 +40,8 @@ print_help() {
 
 HOSTNAME="$(cat "${PODADIR}"/hostname)"
 
-# poda-hampers add -m OCTAL_VFAT /mnt/octal_vfat .
-# poda-hampers add -m LAPTOP_HOME /home/alvarezp . -path ./Dropbox -prune -o -path ./temp -prune -o
+# poda-hamper add -m OCTAL_VFAT /mnt/octal_vfat .
+# poda-hamper add -m LAPTOP_HOME /home/alvarezp . -path ./Dropbox -prune -o -path ./temp -prune -o
 
 # [ ! -z ] ---> [ -n ]
 while [ -n "$1" ]; do
