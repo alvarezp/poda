@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-# Doesn't even work yet...
-
 import os.path
 import fileinput
 import itertools
@@ -11,6 +9,10 @@ dirname = os.path.dirname
 combinations = itertools.combinations
 
 def dprint(*args, **kwargs):
+    #print(*args, file=sys.stderr, **kwargs)
+    pass
+
+def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 def similarity(dir1totalsize, dir2totalsize, equalcontentsize):
@@ -19,47 +21,49 @@ def similarity(dir1totalsize, dir2totalsize, equalcontentsize):
     except ZeroDivisionError:
         return 1
 
-def processclass(direquals, dirsizes, pathamounts, filesize):
-    #dprint("!!! Entering processclass...")
-    pathlist = list()
-    for path in pathamounts:
-        splitpath = path.split('/')
-        allparents = [splitpath[:i+1] for i in range(len(splitpath))]
-        pathlist.extend(map("/".join, allparents))
-        amount = pathamounts[path]
-        for p in map("/".join, allparents):
-            try:
-                dirsizes[p] += amount * filesize
-                #dprint("!!! dirsizes['%s'] += %d * %d" % (path, amount, filesize))
-            except KeyError:
-                dirsizes[p] = amount * filesize
-
-    pathset = sorted(set(pathlist))
-    #dprint("!!! generated path set: %s" % (str(pathset)))
-
-    tuplelist = [(d1, d2) for (d1, d2) in combinations(pathset, 2) if not d2[0:len(d1)] == d1]
-    #dprint("tuplelist: %s" % (str(tuplelist)))
-
-    for t in tuplelist:
-        # 1. Find out how many times the file occurs in each of the
-        #    directories in the tuple
-        # 2. Consider the minimum of the two to be the "common" amount for
-        #    direquals (similarity).
-        t0 = 0
-        t1 = 0
-        for p in paths:
-            if p.startswith(t[0]):
-                t0 = t0 + paths[p]
-            if p.startswith(t[1]):
-                t1 = t1 + paths[p]
-        common = min(t0, t1)
-        #dprint("! == common: %d %d %d" % (t0, t1, common))
-
+def recombine_next_parents(pathamounts):
+    dprint("RECOMBINING %s" % (pathamounts))
+    npa = dict();
+    for p in pathamounts:
+        newpath = os.path.dirname(p)
+        if newpath == "" or newpath == p:
+            continue
         try:
-            direquals[t] += common * filesize
+            npa[newpath] += pathamounts[p]
         except KeyError:
-            direquals[t] = common * filesize
-        #dprint("!!! -- -- direquals[%s] += %d * %d = %d" % (str(t), common, filesize, direquals[t]))
+            npa[newpath]  = pathamounts[p]
+    dprint("RESULT      %s" % (npa))
+    return npa
+
+def processclass(direquals, dirsizes, pathamounts, filesize):
+    dprint("!!! Entering processclass with pathamounts: ", pathamounts)
+    if len(pathamounts) == 0:
+        return
+
+    while True:
+
+        for p in pathamounts:
+            try:
+                dirsizes[p] += pathamounts[p] * filesize
+            except KeyError:
+                dirsizes[p]  = pathamounts[p] * filesize
+            dprint("!!! dirsizes[%s] += %s" % (p, pathamounts[p] * filesize))
+
+        dirpairs = list(itertools.combinations(sorted(pathamounts), 2))
+        dprint("dirpairs", dirpairs)
+        for (dir1, dir2) in list(dirpairs):
+            amount = min(pathamounts[dir1], pathamounts[dir2])
+            dprint("--", dir1, dir2, pathamounts[dir1], pathamounts[dir2], amount)
+            try:
+                direquals[(dir1, dir2)] += amount * filesize
+            except KeyError:
+                direquals[(dir1, dir2)]  = amount * filesize
+            dprint("!!! direquals['%s'] += %d * %d" % ((dir1, dir2), amount, filesize))
+
+        pathamounts = recombine_next_parents(pathamounts)
+
+        if len(pathamounts) <= 1:
+            break
 
 dirsizes = dict()
 direquals = dict()
@@ -86,7 +90,7 @@ with open(0, 'r', errors='replace') as f:
         try:
             filesize = int(line.split(" ")[1])
         except:
-            print("BAD LINE: " + line)
+            eprint("BAD LINE: " + line)
             raise
         #dprint("! filesize: %d" % (filesize))
 
@@ -98,7 +102,7 @@ with open(0, 'r', errors='replace') as f:
         try:
             paths[path] += 1
         except KeyError:
-            paths[path] = 1
+            paths[path]  = 1
 
         prevline = line
 
@@ -107,9 +111,7 @@ with open(0, 'r', errors='replace') as f:
 
 
 for p in direquals:
-    ##print("! p = %s" % (str(p)))
-    ##print("! dirsizes[p[0]] = %s" % (dirsizes[p[0]]))
-    ##print("! dirsizes[p[1]] = %s" % (dirsizes[p[1]]))
-    ##print("! direquals[p[1]] = %s" % (direquals[p]))
+    dprint("! dirsizes = %3s, %3s; direquals = %3s for the pair %s" % (dirsizes[p[0]], dirsizes[p[1]], direquals[p], str(p)))
     s=similarity(dirsizes[p[0]], dirsizes[p[1]], direquals[p])
-    print("%18.0f  %6.2f%% %18s: %s %s" % (0.5 * s * direquals[p], 100 * s, direquals[p], p[0], p[1]))
+    if s >= 0.5:
+        print("%18.0f  %6.2f%% %18s: %s %s" % (s * direquals[p], 100 * s, direquals[p], p[0], p[1]))
