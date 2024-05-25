@@ -15,12 +15,6 @@ def dprint(*args, **kwargs):
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-def similarity(dir1totalsize, dir2totalsize, equalcontentsize):
-    try:
-        return (equalcontentsize + equalcontentsize) / (dir1totalsize + dir2totalsize)
-    except ZeroDivisionError:
-        return 1
-
 def recombine_next_parents(pathamounts):
     dprint("RECOMBINING FROM: %s" % (pathamounts))
     npa = dict();
@@ -103,6 +97,10 @@ with open(0, 'r', errors='replace') as f:
 
 for p in direquals:
     dprint("! dirsizes = %3s, %3s; direquals = %3s for the pair %s" % (dirsizes[p[0]], dirsizes[p[1]], direquals[p], str(p)))
-    s=similarity(dirsizes[p[0]], dirsizes[p[1]], direquals[p])
-    if s >= 0.5:
-        print("%18.0f  %6.2f%% %18s: %s %s" % (s * direquals[p], 100 * s, direquals[p], p[0], p[1]))
+    try:
+        #Calculate similarity
+        s = 2 * direquals[p] / (dirsizes[p[0]] + dirsizes[p[1]])
+        if s >= 0.5:
+            print("%18s %6.2f%% %s %s" % (direquals[p], 100 * s, p[0], p[1]))
+    except ZeroDivisionError:
+        pass
