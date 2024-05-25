@@ -36,12 +36,10 @@ def processclass(direquals, dirsizes, pathamounts, filesize):
             dprint("+ dirsizes[%s] += %s" % (p, pathamounts[p] * filesize))
 
         dirpairs = list(itertools.combinations(sorted(pathamounts), 2))
-        for (dir1, dir2) in list(dirpairs):
-            amount = min(pathamounts[dir1], pathamounts[dir2])
-            try:
-                direquals[(dir1, dir2)] += amount * filesize
-            except KeyError:
-                direquals[(dir1, dir2)]  = amount * filesize
+        dprint("+ list of dirpairs: ", dirpairs)
+        for p in dirpairs:
+            minamount = min(pathamounts[p[0]], pathamounts[p[1]])
+            direquals[p]  = direquals.get(p, 0) + minamount * filesize
             dprint("+ direquals['%s'] += %d * %d" % (p, minamount, filesize))
 
         pathamounts = recombine_next_parents(pathamounts)
