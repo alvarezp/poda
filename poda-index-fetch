@@ -1,0 +1,104 @@
+#
+
+#!/bin/bash
+
+set -e
+
+export LC_ALL=C
+
+# I would have used realpath but I there are systems that are *really* old
+# and don't have realpath yet, so I copied this from Stack Overflow answer,
+# so credit to the answer author: Eugen Konkov. Very nice trick.
+# - https://stackoverflow.com/a/31605674
+#
+# Adapted to apply only to directories. Otherwise the realpath for "."
+# would be /some/dir/.
+realdir() {
+    echo "$(cd "$1"; pwd)"
+}
+
+[ -z "${PODADIR}" ] && PODADIR=$HOME/.poda
+
+[ ! -f "${PODADIR}/hostname" ] && {
+    echo "Cannot find ${PODADIR}/hostname - Run poda-init first."
+    exit 1
+}
+
+[ "$#" -eq 0 ] && {
+    echo "usage: poda-index-fetch remote hamper"
+    echo
+    echo "Gets indexes from one or more remote hampers."
+    echo
+    exit 1
+}
+
+[ -z "${PODADIR}" ] && PODADIR=$HOME/.poda
+
+[ ! -f "${PODADIR}/hostname" ] && {
+    echo "Invalid Poda directory: ${PODADIR} - Maybe run poda init?"
+    exit 1
+}
+
+HOSTNAME="$(cat "${PODADIR}"/hostname)"
+
+# [ ! -z ] ---> [ -n ]
+while [ -n "$1" ]; do
+    case "$1" in
+    --help|-h)
+        print_help
+        exit 0
+        ;;
+    *)
+        # From first unknown parameter and on, consider it "the rest" of
+        # the argument list, this is: <remote> <url>
+        break;
+    esac
+    shift
+done
+
+if [ "$#" -lt 2 ]; then
+    print_help >&2
+    exit 1;
+fi
+
+REMOTE="$1"
+shift
+
+HAMPER="$1"
+shift
+
+RHAMPER_FOUND=0
+while read -r HO HA BD FE; do
+    if [ "$HO" = "${REMOTE}" ] && [ "$HA" = "${HAMPER}" ]; then
+        RHAMPER_FOUND=1
+        break
+    fi
+done < "${PODADIR}/hampers"
+
+if [ "$RHAMPER_FOUND" != "1" ]; then
+    echo "FATAL: Remote hamper not declared on this system. Quitting."
+    exit 1
+fi
+
+REMOTE_FOUND=0
+while read -r RN RP RH RPD ELSE; do
+    if [ "$RN" = "${REMOTE}" ]; then
+        REMOTE_FOUND=1
+        break
+    fi
+done < "${PODADIR}/remotes"
+
+if [ "$REMOTE_FOUND" != "1" ]; then
+    echo "FATAL: Remote not declared on this system. Quitting."
+    exit 1
+fi
+
+CONNECTION="$RH"
+PROTO="$RP"
+
+if [ "${PROTO}" == "ssh" ]; then
+    RPODADIR="$RPD"
+    RPODADIR="" && RPODADIR="~/.poda"
+    mkdir -p $PODADIR/indexes/$REMOTE/$HAMPER
+    ssh $CONNECTION cat $RPODADIR/indexes/$REMOTE/$HAMPER/index > $PODADIR/indexes/$REMOTE/$HAMPER/index
+fi
