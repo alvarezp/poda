@@ -25,7 +25,7 @@ def recombine_next_parents(pathamounts):
     dprint("RECOMBINING FROM: %s" % (pathamounts))
     npa = dict();
     for p in pathamounts:
-        newpath = os.path.dirname(p)
+        newpath = dirname(p)
         if newpath == "":
             continue
         try:
