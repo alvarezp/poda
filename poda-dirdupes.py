@@ -22,7 +22,7 @@ def similarity(dir1totalsize, dir2totalsize, equalcontentsize):
         return 1
 
 def recombine_next_parents(pathamounts):
-    dprint("RECOMBINING %s" % (pathamounts))
+    dprint("RECOMBINING FROM: %s" % (pathamounts))
     npa = dict();
     for p in pathamounts:
         newpath = os.path.dirname(p)
@@ -32,11 +32,11 @@ def recombine_next_parents(pathamounts):
             npa[newpath] += pathamounts[p]
         except KeyError:
             npa[newpath]  = pathamounts[p]
-    dprint("RESULT      %s" % (npa))
+    dprint("...           TO: %s" % (npa))
     return npa
 
 def processclass(direquals, dirsizes, pathamounts, filesize):
-    dprint("!!! Entering processclass with pathamounts: ", pathamounts)
+    dprint("\n\n!!! Entering processclass for size %d with pathamounts: " % (filesize), pathamounts)
     if len(pathamounts) == 0:
         return
 
@@ -47,18 +47,16 @@ def processclass(direquals, dirsizes, pathamounts, filesize):
                 dirsizes[p] += pathamounts[p] * filesize
             except KeyError:
                 dirsizes[p]  = pathamounts[p] * filesize
-            dprint("!!! dirsizes[%s] += %s" % (p, pathamounts[p] * filesize))
+            dprint("+ dirsizes[%s] += %s" % (p, pathamounts[p] * filesize))
 
         dirpairs = list(itertools.combinations(sorted(pathamounts), 2))
-        dprint("dirpairs", dirpairs)
         for (dir1, dir2) in list(dirpairs):
             amount = min(pathamounts[dir1], pathamounts[dir2])
-            dprint("--", dir1, dir2, pathamounts[dir1], pathamounts[dir2], amount)
             try:
                 direquals[(dir1, dir2)] += amount * filesize
             except KeyError:
                 direquals[(dir1, dir2)]  = amount * filesize
-            dprint("!!! direquals['%s'] += %d * %d" % ((dir1, dir2), amount, filesize))
+            dprint("+ direquals['%s'] += %d * %d" % (p, minamount, filesize))
 
         pathamounts = recombine_next_parents(pathamounts)
 
@@ -94,7 +92,7 @@ with open(0, 'r', errors='replace') as f:
         # Converts "host hamper ./path to/somedir/file.txt"
         # ..... to "host:hamper:./path to/somedir"
         path = ":".join([line.split(" ")[5], line.split(" ")[6], dirname(" ".join(line.split(" ")[7:]))])
-        #dprint("! path: %s" % (path))
+        dprint("! path: %s" % (path))
 
         try:
             paths[path] += 1
