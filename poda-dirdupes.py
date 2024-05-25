@@ -22,10 +22,7 @@ def recombine_next_parents(pathamounts):
         newpath = dirname(p)
         if newpath == "":
             continue
-        try:
-            npa[newpath] += pathamounts[p]
-        except KeyError:
-            npa[newpath]  = pathamounts[p]
+        npa[newpath] = npa.get(newpath, 0) + pathamounts[p]
     dprint("...           TO: %s" % (npa))
     return npa
 
@@ -84,10 +81,7 @@ with open(0, 'r', errors='replace') as f:
         path = ":".join([line.split(" ")[5], line.split(" ")[6], dirname(" ".join(line.split(" ")[7:]))])
         dprint("! path: %s" % (path))
 
-        try:
-            paths[path] += 1
-        except KeyError:
-            paths[path]  = 1
+        paths[path] = paths.get(path, 0) + 1
 
         prevline = line
 
