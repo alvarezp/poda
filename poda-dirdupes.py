@@ -85,14 +85,11 @@ with open(0, 'r', errors='replace') as f:
             processclass(direquals, dirsizes, paths, filesize)
             paths.clear()
 
-        #dprint("+ " + line.rstrip())
-
         try:
             filesize = int(line.split(" ")[1])
         except:
             eprint("BAD LINE: " + line)
             raise
-        #dprint("! filesize: %d" % (filesize))
 
         # Converts "host hamper ./path to/somedir/file.txt"
         # ..... to "host:hamper:./path to/somedir"
