@@ -37,10 +37,8 @@ def recombine_next_parents(pathamounts):
 
 def processclass(direquals, dirsizes, pathamounts, filesize):
     dprint("\n\n!!! Entering processclass for size %d with pathamounts: " % (filesize), pathamounts)
-    if len(pathamounts) == 0:
-        return
 
-    while True:
+    while len(pathamounts) != 0:
 
         for p in pathamounts:
             try:
@@ -60,8 +58,6 @@ def processclass(direquals, dirsizes, pathamounts, filesize):
 
         pathamounts = recombine_next_parents(pathamounts)
 
-        if len(pathamounts) <= 1:
-            break
 
 dirsizes = dict()
 direquals = dict()
