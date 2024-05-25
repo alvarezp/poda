@@ -32,10 +32,7 @@ def processclass(direquals, dirsizes, pathamounts, filesize):
     while len(pathamounts) != 0:
 
         for p in pathamounts:
-            try:
-                dirsizes[p] += pathamounts[p] * filesize
-            except KeyError:
-                dirsizes[p]  = pathamounts[p] * filesize
+            dirsizes[p]  = dirsizes.get(p, 0) + pathamounts[p] * filesize
             dprint("+ dirsizes[%s] += %s" % (p, pathamounts[p] * filesize))
 
         dirpairs = list(itertools.combinations(sorted(pathamounts), 2))
