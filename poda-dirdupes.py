@@ -35,7 +35,7 @@ def processclass(direquals, dirsizes, pathamounts, filesize):
             dirsizes[p]  = dirsizes.get(p, 0) + pathamounts[p] * filesize
             dprint("+ dirsizes[%s] += %s" % (p, pathamounts[p] * filesize))
 
-        dirpairs = list(itertools.combinations(sorted(pathamounts), 2))
+        dirpairs = list(combinations(sorted(pathamounts), 2))
         dprint("+ list of dirpairs: ", dirpairs)
         for p in dirpairs:
             minamount = min(pathamounts[p[0]], pathamounts[p[1]])
