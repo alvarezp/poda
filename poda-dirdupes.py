@@ -73,7 +73,7 @@ with open(0, 'r', errors='replace') as f:
         # Converts "host hamper ./path to/somedir/file.txt"
         # ..... to "host:hamper:./path to/somedir"
         path = ":".join([line.split(" ")[5], line.split(" ")[6], dirname(" ".join(line.split(" ")[7:]))])
-        dprint("! path: %s" % (path))
+        #dprint("! path: %s" % (path))
 
         paths[path] = paths.get(path, 0) + 1
 
