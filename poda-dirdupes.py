@@ -67,14 +67,13 @@ with open(0, 'r', errors='replace') as f:
         
         # 51 is the length of the hash plus the size on the line.
         if line[0:51] != prevline[0:51]:
-            processclass(direquals, dirsizes, paths, filesize)
+            try:
+                processclass(direquals, dirsizes, paths, int(prevline.split(" ")[1]))
+            except:
+                eprint("BAD LINE: " + prevline)
+                raise
             paths.clear()
 
-        try:
-            filesize = int(line.split(" ")[1])
-        except:
-            eprint("BAD LINE: " + line)
-            raise
 
         # Converts "host hamper ./path to/somedir/file.txt"
         # ..... to "host:hamper:./path to/somedir"
@@ -86,7 +85,11 @@ with open(0, 'r', errors='replace') as f:
         prevline = line
 
     else:
-        processclass(direquals, dirsizes, paths, filesize)
+        try:
+            processclass(direquals, dirsizes, paths, int(prevline.split(" ")[1]))
+        except:
+            eprint("BAD LAST LINE: " + prevline)
+            raise
 
 
 for p in direquals:
