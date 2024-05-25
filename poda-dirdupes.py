@@ -26,7 +26,7 @@ def recombine_next_parents(pathamounts):
     npa = dict();
     for p in pathamounts:
         newpath = os.path.dirname(p)
-        if newpath == "" or newpath == p:
+        if newpath == "":
             continue
         try:
             npa[newpath] += pathamounts[p]
